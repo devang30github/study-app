@@ -50,16 +50,16 @@
 
   document.getElementById("sheet-title").textContent = sheet.name;
 
+  const answerInput = document.getElementById("answer-input");
+  const submitBtn = document.getElementById("submit-btn");
+  const nextBtn = document.getElementById("next-btn");
+
   loadingState.classList.add("hidden");
   practiceView.classList.remove("hidden");
 
   renderCurrentQuestion();
 
   /* ---------- Event Listeners ---------- */
-
-  const answerInput = document.getElementById("answer-input");
-  const submitBtn = document.getElementById("submit-btn");
-  const nextBtn = document.getElementById("next-btn");
 
   submitBtn.addEventListener("click", handleSubmit);
   answerInput.addEventListener("keydown", (e) => {
