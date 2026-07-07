@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Study App</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <nav class="navbar">
+      <div class="navbar-brand">📚 Study App</div>
+      <div class="navbar-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="admin.html" class="active">Admin</a>
+        <a href="#" id="logout-link">Logout</a>
+      </div>
+    </nav>
+
+    <div class="container-wide">
+
+      <div id="loading-state" class="text-center mt-lg">
+        <div class="spinner"></div>
+        <p class="text-faint mt-md">Loading admin panel…</p>
+      </div>
+
+      <div id="admin-content" class="hidden">
+
+        <!-- ============ SHEET LIST VIEW ============ -->
+        <div id="sheet-list-view">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+            <h1>Manage Sheets</h1>
+            <button id="new-sheet-btn" class="btn btn-primary">+ New Sheet</button>
+          </div>
+
+          <div id="sheets-container" class="card" style="padding:0;">
+            <!-- Populated by JS -->
+          </div>
+
+          <div id="empty-sheets-admin" class="empty-state hidden">
+            <p>No sheets yet. Create your first one to get started.</p>
+          </div>
+        </div>
+
+        <!-- ============ SHEET DETAIL / QUESTIONS VIEW ============ -->
+        <div id="sheet-detail-view" class="hidden">
+          <button id="back-to-sheets-btn" class="btn btn-secondary btn-sm mb-md">&larr; Back to Sheets</button>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md); flex-wrap: wrap; gap: var(--space-sm);">
+            <h1 id="detail-sheet-name">Sheet Name</h1>
+            <div style="display:flex; gap: var(--space-sm);">
+              <button id="rename-sheet-btn" class="btn btn-secondary btn-sm">Rename</button>
+              <button id="delete-sheet-btn" class="btn btn-danger btn-sm">Delete Sheet</button>
+            </div>
+          </div>
+
+          <!-- Toolbar: search, add, import, export -->
+          <div class="card mb-lg">
+            <div style="display:flex; gap: var(--space-md); flex-wrap: wrap; align-items:flex-end;">
+              <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom:0;">
+                <label class="form-label" for="question-search">Search questions</label>
+                <input type="text" id="question-search" class="form-input" placeholder="Search by question or answer…" />
+              </div>
+              <button id="add-question-btn" class="btn btn-primary">+ Add Question</button>
+              <button id="import-btn" class="btn btn-secondary">Import CSV</button>
+              <button id="export-btn" class="btn btn-secondary">Export CSV</button>
+              <input type="file" id="import-file-input" accept=".csv" class="hidden" />
+            </div>
+          </div>
+
+          <!-- Question list -->
+          <div id="questions-container" class="card" style="padding:0;">
+            <!-- Populated by JS -->
+          </div>
+
+          <div id="empty-questions" class="empty-state hidden">
+            <p>No questions yet. Add one, or import a CSV.</p>
+          </div>
+
+          <p class="text-faint mt-md" id="question-count-label" style="font-size:13px;"></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODALS ============ -->
+
+  <!-- New / Rename Sheet Modal -->
+  <div id="sheet-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50;">
+    <div class="card" style="max-width:400px; width:90%;">
+      <h3 class="mb-md" id="sheet-modal-title">New Sheet</h3>
+      <div class="form-group">
+        <label class="form-label" for="sheet-modal-input">Sheet name</label>
+        <input type="text" id="sheet-modal-input" class="form-input" placeholder="e.g. Squares" />
+      </div>
+      <div style="display:flex; gap: var(--space-sm);">
+        <button id="sheet-modal-cancel" class="btn btn-secondary btn-block">Cancel</button>
+        <button id="sheet-modal-confirm" class="btn btn-primary btn-block">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Question Modal -->
+  <div id="question-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50;">
+    <div class="card" style="max-width:480px; width:90%;">
+      <h3 class="mb-md" id="question-modal-title">Add Question</h3>
+      <div class="form-group">
+        <label class="form-label" for="question-modal-q">Question</label>
+        <textarea id="question-modal-q" class="form-textarea" placeholder="e.g. What is 15 squared?"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="question-modal-a">Answer</label>
+        <input type="text" id="question-modal-a" class="form-input" placeholder="e.g. 225" />
+      </div>
+      <div style="display:flex; gap: var(--space-sm);">
+        <button id="question-modal-cancel" class="btn btn-secondary btn-block">Cancel</button>
+        <button id="question-modal-confirm" class="btn btn-primary btn-block">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirm-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50;">
+    <div class="card" style="max-width:400px; width:90%;">
+      <h3 class="mb-md" id="confirm-modal-title">Are you sure?</h3>
+      <p class="text-muted mb-lg" id="confirm-modal-message"></p>
+      <div style="display:flex; gap: var(--space-sm);">
+        <button id="confirm-modal-cancel" class="btn btn-secondary btn-block">Cancel</button>
+        <button id="confirm-modal-confirm" class="btn btn-danger btn-block">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import mode chooser -->
+  <div id="import-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50;">
+    <div class="card" style="max-width:420px; width:90%;">
+      <h3 class="mb-md">Import Questions</h3>
+      <p class="text-muted mb-md">CSV format: <code>question,answer</code> (header row optional).</p>
+      <div class="form-group">
+        <label class="form-label">
+          <input type="radio" name="import-mode" value="append" checked /> Append to existing questions
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          <input type="radio" name="import-mode" value="replace" /> Replace all existing questions
+        </label>
+      </div>
+      <div style="display:flex; gap: var(--space-sm);">
+        <button id="import-modal-cancel" class="btn btn-secondary btn-block">Cancel</button>
+        <button id="import-modal-confirm" class="btn btn-primary btn-block">Choose File</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/streak.js"></script>
+  <script src="js/dataStore.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

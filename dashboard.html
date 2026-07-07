@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Study App</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <nav class="navbar">
+      <div class="navbar-brand">📚 Study App</div>
+      <div class="navbar-links">
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="admin.html">Admin</a>
+        <a href="#" id="logout-link">Logout</a>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <!-- Loading state -->
+      <div id="loading-state" class="text-center mt-lg">
+        <div class="spinner"></div>
+        <p class="text-faint mt-md">Loading your progress…</p>
+      </div>
+
+      <!-- Main dashboard content -->
+      <div id="dashboard-content" class="hidden">
+
+        <!-- Congrats banner (shown only when goal just completed) -->
+        <div id="congrats-banner" class="congrats-banner hidden">
+          🎉 Goal complete! You practiced every question today. Streak extended.
+        </div>
+
+        <h1 class="mb-md">Today's Progress</h1>
+
+        <!-- Stat cards -->
+        <div class="stat-grid">
+          <div class="card">
+            <div class="card-title">Today's Score</div>
+            <div class="card-value" id="stat-today-score">0</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Streak</div>
+            <div class="card-value" id="stat-streak">0 🔥</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Total Sheets</div>
+            <div class="card-value" id="stat-total-sheets">0</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Answered Today</div>
+            <div class="card-value" id="stat-answered-today">0</div>
+          </div>
+        </div>
+
+        <!-- Daily goal progress -->
+        <div class="card mb-lg">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-sm);">
+            <span class="card-title" style="margin-bottom:0;">Daily Goal</span>
+            <span class="text-muted" id="goal-fraction" style="font-size:13px;">0 / 0</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="goal-progress-fill" style="width: 0%;"></div>
+          </div>
+          <p class="card-sub mt-sm" id="goal-status-text">Practice every question in every sheet to complete today's goal.</p>
+        </div>
+
+        <!-- Last sheet practiced -->
+        <div class="card mb-lg">
+          <div class="card-title">Last Sheet Practiced</div>
+          <div class="card-value" style="font-size: 20px;" id="stat-last-sheet">None yet</div>
+        </div>
+
+        <!-- Sheet list -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+          <h2>Your Sheets</h2>
+          <a href="admin.html" class="btn btn-secondary btn-sm">+ Manage Sheets</a>
+        </div>
+
+        <div id="sheet-list" class="card" style="padding:0;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="empty-sheets" class="empty-state hidden">
+          <p>No sheets yet.</p>
+          <a href="admin.html" class="btn btn-primary mt-md">Create your first sheet</a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/streak.js"></script>
+  <script src="js/dataStore.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

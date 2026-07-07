@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study App — Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="center-screen">
+    <div class="card" style="max-width: 420px; width: 100%;">
+
+      <!-- ============ LOGIN VIEW (returning user) ============ -->
+      <div id="login-view" class="hidden">
+        <h2 class="mb-sm">Welcome back</h2>
+        <p class="text-muted mb-lg">Enter your password to continue.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input
+            type="password"
+            id="login-password"
+            class="form-input"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button id="login-btn" class="btn btn-primary btn-block">Unlock</button>
+        <p id="login-error" class="text-center mt-md hidden" style="color: var(--color-error); font-size: 13px;"></p>
+
+        <p class="text-center mt-lg">
+          <a href="#" id="show-reset-link" style="font-size: 13px;">Reset setup</a>
+        </p>
+      </div>
+
+      <!-- ============ SETUP VIEW (first time) ============ -->
+      <div id="setup-view" class="hidden">
+        <h2 class="mb-sm">Set up your Study App</h2>
+        <p class="text-muted mb-lg">This runs once. Your data will be stored in a private GitHub repo.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-password">Choose a password</label>
+          <input
+            type="password"
+            id="setup-password"
+            class="form-input"
+            placeholder="Something only you know"
+            autocomplete="new-password"
+          />
+          <p class="form-hint">This only locks the browser UI — not real security, just a gate.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-owner">GitHub username</label>
+          <input
+            type="text"
+            id="setup-owner"
+            class="form-input"
+            placeholder="e.g. devang123"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-repo">Data repo name</label>
+          <input
+            type="text"
+            id="setup-repo"
+            class="form-input"
+            placeholder="study-data"
+            value="study-data"
+          />
+          <p class="form-hint">Must be a private repo you've already created.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-token">Personal Access Token</label>
+          <input
+            type="password"
+            id="setup-token"
+            class="form-input"
+            placeholder="ghp_xxxxxxxxxxxx"
+            autocomplete="off"
+          />
+          <p class="form-hint">
+            Needs "Contents: Read and write" permission on the data repo only.
+          </p>
+        </div>
+
+        <button id="setup-btn" class="btn btn-primary btn-block">Save &amp; Connect</button>
+        <p id="setup-error" class="text-center mt-md hidden" style="color: var(--color-error); font-size: 13px;"></p>
+        <p id="setup-status" class="text-center mt-md text-faint hidden" style="font-size: 13px;"></p>
+      </div>
+
+      <!-- ============ RESET CONFIRM VIEW ============ -->
+      <div id="reset-view" class="hidden">
+        <h2 class="mb-sm">Reset setup?</h2>
+        <p class="text-muted mb-lg">
+          This clears your saved password and GitHub connection from this browser.
+          Your data in the GitHub repo is <strong>not</strong> deleted.
+        </p>
+        <button id="confirm-reset-btn" class="btn btn-danger btn-block">Yes, reset this browser</button>
+        <button id="cancel-reset-btn" class="btn btn-secondary btn-block mt-sm">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const loginView = document.getElementById("login-view");
+    const setupView = document.getElementById("setup-view");
+    const resetView = document.getElementById("reset-view");
+
+    function showView(view) {
+      [loginView, setupView, resetView].forEach(v => v.classList.add("hidden"));
+      view.classList.remove("hidden");
+    }
+
+    function init() {
+      if (Auth.isFullySetUp()) {
+        showView(loginView);
+      } else {
+        showView(setupView);
+      }
+    }
+
+    /* ---------- Login flow ---------- */
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const password = document.getElementById("login-password").value;
+      const errorEl = document.getElementById("login-error");
+      errorEl.classList.add("hidden");
+
+      if (!password) {
+        errorEl.textContent = "Please enter your password.";
+        errorEl.classList.remove("hidden");
+        return;
+      }
+
+      const ok = await Auth.checkPassword(password);
+      if (ok) {
+        Auth.unlock();
+        window.location.href = "dashboard.html";
+      } else {
+        errorEl.textContent = "Incorrect password.";
+        errorEl.classList.remove("hidden");
+      }
+    });
+
+    document.getElementById("login-password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("login-btn").click();
+    });
+
+    /* ---------- Setup flow ---------- */
+
+    document.getElementById("setup-btn").addEventListener("click", async () => {
+      const password = document.getElementById("setup-password").value;
+      const owner = document.getElementById("setup-owner").value.trim();
+      const repo = document.getElementById("setup-repo").value.trim() || "study-data";
+      const token = document.getElementById("setup-token").value.trim();
+
+      const errorEl = document.getElementById("setup-error");
+      const statusEl = document.getElementById("setup-status");
+      errorEl.classList.add("hidden");
+      statusEl.classList.add("hidden");
+
+      if (!password || !owner || !repo || !token) {
+        errorEl.textContent = "Please fill in all fields.";
+        errorEl.classList.remove("hidden");
+        return;
+      }
+
+      const btn = document.getElementById("setup-btn");
+      btn.disabled = true;
+      statusEl.textContent = "Testing connection to GitHub…";
+      statusEl.classList.remove("hidden");
+
+      // Temporarily save config so testConnection can use it
+      GitHubAPI.saveConfig({ token, owner, repo, branch: "main" });
+
+      const works = await GitHubAPI.testConnection();
+
+      if (!works) {
+        GitHubAPI.clearConfig();
+        btn.disabled = false;
+        statusEl.classList.add("hidden");
+        errorEl.textContent = "Couldn't connect. Check your username, repo name, and token permissions.";
+        errorEl.classList.remove("hidden");
+        return;
+      }
+
+      await Auth.setPassword(password);
+      Auth.unlock();
+      window.location.href = "dashboard.html";
+    });
+
+    /* ---------- Reset flow ---------- */
+
+    document.getElementById("show-reset-link").addEventListener("click", (e) => {
+      e.preventDefault();
+      showView(resetView);
+    });
+
+    document.getElementById("cancel-reset-btn").addEventListener("click", () => {
+      showView(loginView);
+    });
+
+    document.getElementById("confirm-reset-btn").addEventListener("click", () => {
+      localStorage.clear();
+      sessionStorage.clear();
+      showView(setupView);
+    });
+
+    init();
+  </script>
+</body>
+</html>

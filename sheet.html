@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice — Study App</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <nav class="navbar">
+      <div class="navbar-brand">📚 Study App</div>
+      <div class="navbar-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="admin.html">Admin</a>
+        <a href="#" id="logout-link">Logout</a>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <div id="loading-state" class="text-center mt-lg">
+        <div class="spinner"></div>
+        <p class="text-faint mt-md">Loading sheet…</p>
+      </div>
+
+      <div id="error-state" class="text-center mt-lg hidden">
+        <p style="color: var(--color-error);" id="error-message"></p>
+        <a href="dashboard.html" class="btn btn-secondary mt-md">Back to Dashboard</a>
+      </div>
+
+      <!-- Practice view -->
+      <div id="practice-view" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+          <h2 id="sheet-title">Sheet Name</h2>
+          <span class="text-muted" id="question-counter" style="font-size:14px;">1 / 10</span>
+        </div>
+
+        <div class="progress-bar-track mb-lg">
+          <div class="progress-bar-fill" id="session-progress-fill" style="width: 0%;"></div>
+        </div>
+
+        <div class="card text-center">
+          <div class="card-title">Question</div>
+          <p style="font-size: 22px; font-weight: 600; margin: var(--space-md) 0; line-height: 1.4;" id="question-text"></p>
+
+          <input
+            type="text"
+            id="answer-input"
+            class="answer-input"
+            placeholder="Type your answer…"
+            autocomplete="off"
+          />
+
+          <p id="correct-answer-reveal" class="mt-md hidden" style="font-size: 15px;">
+            Correct answer: <strong id="correct-answer-text"></strong>
+          </p>
+
+          <button id="submit-btn" class="btn btn-primary btn-block mt-lg">Submit</button>
+          <button id="next-btn" class="btn btn-primary btn-block mt-lg hidden">Next Question</button>
+        </div>
+
+        <div class="card mt-lg" style="display:flex; justify-content:space-around; text-align:center;">
+          <div>
+            <div class="card-title">Score</div>
+            <div class="card-value" style="font-size:22px;" id="session-score">0</div>
+          </div>
+          <div>
+            <div class="card-title">Correct</div>
+            <div class="card-value" style="font-size:22px; color: var(--color-success);" id="session-correct">0</div>
+          </div>
+          <div>
+            <div class="card-title">Wrong</div>
+            <div class="card-value" style="font-size:22px; color: var(--color-error);" id="session-wrong">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session complete view -->
+      <div id="complete-view" class="hidden text-center mt-lg">
+        <div class="card">
+          <h2 class="mb-md">Session Complete! 🎉</h2>
+          <p class="text-muted mb-lg">You finished all questions in this sheet.</p>
+          <div class="stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div>
+              <div class="card-title">Final Score</div>
+              <div class="card-value" id="final-score">0</div>
+            </div>
+            <div>
+              <div class="card-title">Accuracy</div>
+              <div class="card-value" id="final-accuracy">0%</div>
+            </div>
+          </div>
+          <a href="dashboard.html" class="btn btn-primary btn-block mt-lg">Back to Dashboard</a>
+          <button id="practice-again-btn" class="btn btn-secondary btn-block mt-sm">Practice Again</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/streak.js"></script>
+  <script src="js/dataStore.js"></script>
+  <script src="js/practice.js"></script>
+</body>
+</html>
