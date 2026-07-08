@@ -159,7 +159,7 @@
         total: questionOrder.length
       });
     } catch (err) {
-      console.warn("Failed to save session summary:", err.message);
+      console.warn("Sorry failed to save session summary:", err.message);
       Utils.showToast("Warning: session summary may not have saved.");
     }
   }
