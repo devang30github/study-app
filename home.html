@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Sheets — Study App</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <nav class="navbar">
+      <div class="navbar-brand">📚 Study App</div>
+      <div class="navbar-links">
+        <a href="home.html" class="active">My Sheets</a>
+        <a href="admin.html">Admin</a>
+        <a href="#" id="logout-link">Logout</a>
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <div id="loading-state" class="text-center mt-lg">
+        <div class="spinner"></div>
+        <p class="text-faint mt-md">Loading sheets…</p>
+      </div>
+
+      <div id="home-content" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-lg);">
+          <h1>My Sheets</h1>
+          <a href="admin.html" class="btn btn-primary btn-sm">+ New Sheet</a>
+        </div>
+
+        <div id="sheet-list" class="card" style="padding:0;">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="empty-state" class="empty-state hidden">
+          <p>No sheets yet.</p>
+          <a href="admin.html" class="btn btn-primary mt-md">Create your first sheet</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dataStore.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

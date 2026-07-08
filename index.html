@@ -144,7 +144,7 @@
       const ok = await Auth.checkPassword(password);
       if (ok) {
         Auth.unlock();
-        window.location.href = "dashboard.html";
+        window.location.href = "home.html";
       } else {
         errorEl.textContent = "Incorrect password.";
         errorEl.classList.remove("hidden");
@@ -195,7 +195,7 @@
 
       await Auth.setPassword(password);
       Auth.unlock();
-      window.location.href = "dashboard.html";
+      window.location.href = "home.html";
     });
 
     /* ---------- Reset flow ---------- */

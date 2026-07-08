@@ -130,15 +130,7 @@
     nextBtn.classList.remove("hidden");
     nextBtn.focus();
 
-    // Track in-memory; write to GitHub via recordAnswer, but throttle failures gracefully
-    answeredSinceLastSave += 1;
-
-    try {
-      await DataStore.recordAnswer(sheetId, qId, isCorrect);
-    } catch (err) {
-      // Non-fatal: don't block the UI. We'll retry via the final save at session end.
-      console.warn("Failed to save answer checkpoint:", err.message);
-    }
+    
   }
 
   function goToNextQuestion() {
@@ -162,7 +154,7 @@
     completeView.classList.remove("hidden");
 
     try {
-      await DataStore.recordSheetSession(sheetId, {
+      await DataStore.recordPracticeResult(sheetId, {
         correct: sessionCorrect,
         total: questionOrder.length
       });
