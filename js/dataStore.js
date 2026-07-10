@@ -124,31 +124,61 @@ const DataStore = (() => {
 
   /* ---------- Questions (fast path — 1 API call each) ---------- */
 
-  async function addQuestion(sheetId, q, a) {
+  // questionData: { type: "text"|"mcq", q, a, options? }
+  async function addQuestion(sheetId, questionData) {
     const sheet = await getSheet(sheetId);
     if (!sheet) throw new Error("Sheet not found");
 
+    const newQuestion = {
+      id: Utils.generateId("q"),
+      type: questionData.type || "text",
+      q: questionData.q,
+      a: questionData.a
+    };
+    if (questionData.type === "mcq") {
+      newQuestion.options = questionData.options;
+    }
+
     const updated = {
       ...sheet,
-      questions: [...sheet.questions, { id: Utils.generateId("q"), q, a }]
+      questions: [...sheet.questions, newQuestion]
     };
     await writeSheet(sheetId, updated, `Add question to ${sheetId}`);
     return updated.questions;
   }
 
-  async function editQuestion(sheetId, questionId, newQ, newA) {
+  
+  // questionData: { type: "text"|"mcq", q, a, options? }
+  async function editQuestion(sheetId, questionId, questionData) {
     const sheet = await getSheet(sheetId);
     if (!sheet) throw new Error("Sheet not found");
 
     const updated = {
       ...sheet,
-      questions: sheet.questions.map(item =>
-        item.id === questionId ? { ...item, q: newQ, a: newA } : item
-      )
+      questions: sheet.questions.map(item => {
+        if (item.id !== questionId) return item;
+
+        const edited = {
+          ...item,
+          type: questionData.type || "text",
+          q: questionData.q,
+          a: questionData.a
+        };
+
+        if (questionData.type === "mcq") {
+          edited.options = questionData.options;
+        } else {
+          delete edited.options; // switching from mcq -> text drops old options
+        }
+
+        return edited;
+      })
     };
     await writeSheet(sheetId, updated, `Edit question in ${sheetId}`);
     return updated.questions;
   }
+
+  
 
   async function deleteQuestion(sheetId, questionId) {
     const sheet = await getSheet(sheetId);

@@ -131,9 +131,13 @@
       filteredQuestions.forEach(item => {
         const row = document.createElement("div");
         row.className = "list-item";
+        const typeBadge = item.type === "mcq"
+          ? `<span class="badge badge-success" style="margin-left:6px;">MCQ</span>`
+          : "";
+
         row.innerHTML = `
           <div class="list-item-main">
-            <div class="list-item-title">${escapeHtml(item.q)}</div>
+            <div class="list-item-title">${escapeHtml(item.q)}${typeBadge}</div>
             <div class="list-item-sub">Answer: ${escapeHtml(item.a)}</div>
           </div>
           <div class="list-item-actions">
@@ -252,8 +256,40 @@
   const questionModalTitle = document.getElementById("question-modal-title");
   const questionModalQ = document.getElementById("question-modal-q");
   const questionModalA = document.getElementById("question-modal-a");
+  const textAnswerGroup = document.getElementById("text-answer-group");
+  const mcqAnswerGroup = document.getElementById("mcq-answer-group");
+  const typeToggleText = document.getElementById("type-toggle-text");
+  const typeToggleMcq = document.getElementById("type-toggle-mcq");
+  const mcqCorrect = document.getElementById("mcq-correct");
+  const mcqWrong1 = document.getElementById("mcq-wrong-1");
+  const mcqWrong2 = document.getElementById("mcq-wrong-2");
+  const mcqWrong3 = document.getElementById("mcq-wrong-3");
+
   let questionModalMode = "add";
   let editingQuestionId = null;
+  let currentQuestionType = "text";
+
+  function setQuestionType(type) {
+    currentQuestionType = type;
+    if (type === "mcq") {
+      textAnswerGroup.classList.add("hidden");
+      mcqAnswerGroup.classList.remove("hidden");
+      typeToggleMcq.classList.remove("btn-secondary");
+      typeToggleMcq.classList.add("btn-primary");
+      typeToggleText.classList.remove("btn-primary");
+      typeToggleText.classList.add("btn-secondary");
+    } else {
+      mcqAnswerGroup.classList.add("hidden");
+      textAnswerGroup.classList.remove("hidden");
+      typeToggleText.classList.remove("btn-secondary");
+      typeToggleText.classList.add("btn-primary");
+      typeToggleMcq.classList.remove("btn-primary");
+      typeToggleMcq.classList.add("btn-secondary");
+    }
+  }
+
+  typeToggleText.addEventListener("click", () => setQuestionType("text"));
+  typeToggleMcq.addEventListener("click", () => setQuestionType("mcq"));
 
   function openQuestionModal({ mode, questionId = null }) {
     questionModalMode = mode;
@@ -263,11 +299,27 @@
       const existing = currentSheet.questions.find(q => q.id === questionId);
       questionModalTitle.textContent = "Edit Question";
       questionModalQ.value = existing.q;
-      questionModalA.value = existing.a;
+
+      if (existing.type === "mcq") {
+        setQuestionType("mcq");
+        mcqCorrect.value = existing.a;
+        const wrongOpts = (existing.options || []).filter(opt => opt !== existing.a);
+        mcqWrong1.value = wrongOpts[0] || "";
+        mcqWrong2.value = wrongOpts[1] || "";
+        mcqWrong3.value = wrongOpts[2] || "";
+      } else {
+        setQuestionType("text");
+        questionModalA.value = existing.a;
+      }
     } else {
       questionModalTitle.textContent = "Add Question";
       questionModalQ.value = "";
       questionModalA.value = "";
+      mcqCorrect.value = "";
+      mcqWrong1.value = "";
+      mcqWrong2.value = "";
+      mcqWrong3.value = "";
+      setQuestionType("text");
     }
 
     questionModal.classList.remove("hidden");
@@ -286,11 +338,39 @@
 
   document.getElementById("question-modal-confirm").addEventListener("click", async () => {
     const q = questionModalQ.value.trim();
-    const a = questionModalA.value.trim();
-
-    if (!q || !a) {
-      Utils.showToast("Please fill in both question and answer.");
+    if (!q) {
+      Utils.showToast("Please enter a question.");
       return;
+    }
+
+    let questionData;
+
+    if (currentQuestionType === "mcq") {
+      const correct = mcqCorrect.value.trim();
+      const w1 = mcqWrong1.value.trim();
+      const w2 = mcqWrong2.value.trim();
+      const w3 = mcqWrong3.value.trim();
+
+      if (!correct || !w1 || !w2 || !w3) {
+        Utils.showToast("Please fill in the correct answer and all 3 wrong options.");
+        return;
+      }
+
+      const allOptions = [correct, w1, w2, w3];
+      const uniqueCheck = new Set(allOptions.map(o => Utils.normalizeAnswer(o)));
+      if (uniqueCheck.size < 4) {
+        Utils.showToast("All 4 options must be different from each other.");
+        return;
+      }
+
+      questionData = { type: "mcq", q, a: correct, options: allOptions };
+    } else {
+      const a = questionModalA.value.trim();
+      if (!a) {
+        Utils.showToast("Please enter an answer.");
+        return;
+      }
+      questionData = { type: "text", q, a };
     }
 
     const btn = document.getElementById("question-modal-confirm");
@@ -299,10 +379,10 @@
     try {
       let updatedQuestions;
       if (questionModalMode === "add") {
-        updatedQuestions = await DataStore.addQuestion(currentSheet.id, q, a);
+        updatedQuestions = await DataStore.addQuestion(currentSheet.id, questionData);
         Utils.showToast("Question added.");
       } else {
-        updatedQuestions = await DataStore.editQuestion(currentSheet.id, editingQuestionId, q, a);
+        updatedQuestions = await DataStore.editQuestion(currentSheet.id, editingQuestionId, questionData);
         Utils.showToast("Question updated.");
       }
 

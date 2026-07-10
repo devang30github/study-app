@@ -103,17 +103,45 @@
   </div>
 
   <!-- Add / Edit Question Modal -->
-  <div id="question-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50;">
+  <div id="question-modal" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:50; overflow-y:auto; padding: var(--space-lg) 0;">
     <div class="card" style="max-width:480px; width:90%;">
       <h3 class="mb-md" id="question-modal-title">Add Question</h3>
+
+      <!-- Type toggle -->
+      <div class="form-group">
+        <label class="form-label">Question type</label>
+        <div style="display:flex; gap: var(--space-sm);">
+          <button type="button" id="type-toggle-text" class="btn btn-secondary btn-sm" style="flex:1;">Text</button>
+          <button type="button" id="type-toggle-mcq" class="btn btn-secondary btn-sm" style="flex:1;">MCQ</button>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="question-modal-q">Question</label>
         <textarea id="question-modal-q" class="form-textarea" placeholder="e.g. What is 15 squared?"></textarea>
       </div>
-      <div class="form-group">
+
+      <!-- Text mode: single answer -->
+      <div id="text-answer-group" class="form-group">
         <label class="form-label" for="question-modal-a">Answer</label>
         <input type="text" id="question-modal-a" class="form-input" placeholder="e.g. 225" />
       </div>
+
+      <!-- MCQ mode: correct + 3 wrong options -->
+      <div id="mcq-answer-group" class="form-group hidden">
+        <label class="form-label" for="mcq-correct">Correct answer</label>
+        <input type="text" id="mcq-correct" class="form-input mb-sm" placeholder="e.g. 80 km/h" />
+
+        <label class="form-label" for="mcq-wrong-1">Wrong option 1</label>
+        <input type="text" id="mcq-wrong-1" class="form-input mb-sm" placeholder="e.g. 60 km/h" />
+
+        <label class="form-label" for="mcq-wrong-2">Wrong option 2</label>
+        <input type="text" id="mcq-wrong-2" class="form-input mb-sm" placeholder="e.g. 90 km/h" />
+
+        <label class="form-label" for="mcq-wrong-3">Wrong option 3</label>
+        <input type="text" id="mcq-wrong-3" class="form-input" placeholder="e.g. 100 km/h" />
+      </div>
+
       <div style="display:flex; gap: var(--space-sm);">
         <button id="question-modal-cancel" class="btn btn-secondary btn-block">Cancel</button>
         <button id="question-modal-confirm" class="btn btn-primary btn-block">Save</button>

@@ -45,6 +45,7 @@
           <div class="card-title">Question</div>
           <p style="font-size: 22px; font-weight: 600; margin: var(--space-md) 0; line-height: 1.4;" id="question-text"></p>
 
+          <!-- Text-answer mode -->
           <input
             type="text"
             id="answer-input"
@@ -52,6 +53,11 @@
             placeholder="Type your answer…"
             autocomplete="off"
           />
+
+          <!-- MCQ mode: 4 option buttons, populated by JS -->
+          <div id="mcq-options" class="hidden" style="display:flex; flex-direction:column; gap: var(--space-sm);">
+            <!-- Buttons injected here -->
+          </div>
 
           <p id="correct-answer-reveal" class="mt-md hidden" style="font-size: 15px;">
             Correct answer: <strong id="correct-answer-text"></strong>

@@ -53,6 +53,7 @@
   const answerInput = document.getElementById("answer-input");
   const submitBtn = document.getElementById("submit-btn");
   const nextBtn = document.getElementById("next-btn");
+  const mcqOptionsContainer = document.getElementById("mcq-options");
 
   loadingState.classList.add("hidden");
   practiceView.classList.remove("hidden");
@@ -82,6 +83,7 @@
 
     const qId = questionOrder[currentIndex];
     const question = getQuestionById(qId);
+    const questionType = question.type || "text";
 
     document.getElementById("question-text").textContent = question.q;
     document.getElementById("question-counter").textContent =
@@ -90,16 +92,76 @@
     const fillPercent = Math.round((currentIndex / questionOrder.length) * 100);
     document.getElementById("session-progress-fill").style.width = `${fillPercent}%`;
 
-    answerInput.value = "";
-    answerInput.classList.remove("correct", "incorrect");
-    answerInput.disabled = false;
-    answerInput.focus();
-
     document.getElementById("correct-answer-reveal").classList.add("hidden");
-    submitBtn.classList.remove("hidden");
     nextBtn.classList.add("hidden");
 
+    if (questionType === "mcq") {
+      answerInput.classList.add("hidden");
+      submitBtn.classList.add("hidden");
+      renderMcqOptions(question);
+    } else {
+      mcqOptionsContainer.classList.add("hidden");
+      answerInput.classList.remove("hidden");
+      submitBtn.classList.remove("hidden");
+
+      answerInput.value = "";
+      answerInput.classList.remove("correct", "incorrect");
+      answerInput.disabled = false;
+      answerInput.focus();
+    }
+
     updateSessionStats();
+  }
+
+  function renderMcqOptions(question) {
+    mcqOptionsContainer.classList.remove("hidden");
+    mcqOptionsContainer.innerHTML = "";
+
+    const shuffledOptions = Utils.shuffle(question.options);
+
+    shuffledOptions.forEach(optionText => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn-secondary btn-block";
+      btn.textContent = optionText;
+      btn.addEventListener("click", () => handleMcqAnswer(optionText, question, btn));
+      mcqOptionsContainer.appendChild(btn);
+    });
+  }
+
+  async function handleMcqAnswer(selectedOption, question, clickedBtn) {
+    if (currentQuestionAnswered) return;
+    currentQuestionAnswered = true;
+
+    const isCorrect = Utils.isAnswerCorrect(selectedOption, question.a);
+
+    // Disable all option buttons and color them
+    const allButtons = mcqOptionsContainer.querySelectorAll("button");
+    allButtons.forEach(btn => {
+      btn.disabled = true;
+      if (Utils.isAnswerCorrect(btn.textContent, question.a)) {
+        btn.classList.remove("btn-secondary");
+        btn.classList.add("btn-primary");
+        btn.style.background = "var(--color-success)";
+        btn.style.color = "#fff";
+        btn.style.borderColor = "var(--color-success)";
+      } else if (btn === clickedBtn) {
+        btn.style.background = "var(--color-error-bg)";
+        btn.style.color = "var(--color-error)";
+        btn.style.borderColor = "var(--color-error-border)";
+      }
+    });
+
+    if (isCorrect) {
+      sessionScore += 1;
+      sessionCorrect += 1;
+    } else {
+      sessionWrong += 1;
+    }
+
+    updateSessionStats();
+    nextBtn.classList.remove("hidden");
+    nextBtn.focus();
   }
 
   async function handleSubmit() {
@@ -107,6 +169,7 @@
 
     const qId = questionOrder[currentIndex];
     const question = getQuestionById(qId);
+    if ((question.type || "text") !== "text") return; // MCQ answers go through handleMcqAnswer
     const userAnswer = answerInput.value;
     const isCorrect = Utils.isAnswerCorrect(userAnswer, question.a);
 

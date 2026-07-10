@@ -141,26 +141,52 @@ const Utils = (() => {
     return rows.filter(r => r.some(cell => cell.trim() !== ""));
   }
 
-  // Convert parsed CSV rows into {q, a} objects.
-  // Expects first row to be a header ("question,answer") — skips it if detected.
+  // Convert parsed CSV rows into question objects.
+  // 2 columns (question, answer) -> type "text"
+  // 5 columns (question, correct_answer, wrong1, wrong2, wrong3) -> type "mcq"
+  // Header row is optional and auto-detected/skipped if present.
   function csvRowsToQuestions(rows) {
     if (rows.length === 0) return [];
 
     let startIdx = 0;
     const firstRow = rows[0].map(c => c.trim().toLowerCase());
-    if (firstRow[0] === "question" && firstRow[1] === "answer") {
+    if (firstRow[0] === "question" && (firstRow[1] === "answer" || firstRow[1] === "correct_answer")) {
       startIdx = 1;
     }
 
     const questions = [];
     for (let i = startIdx; i < rows.length; i++) {
-      const [q, a] = rows[i];
-      if (q && a !== undefined && q.trim() !== "") {
-        questions.push({
-          id: generateId("q"),
-          q: q.trim(),
-          a: a.trim()
-        });
+      const row = rows[i];
+      const q = row[0] ? row[0].trim() : "";
+      if (!q) continue;
+
+      if (row.length >= 5) {
+        // MCQ: question, correct_answer, wrong1, wrong2, wrong3
+        const correct = (row[1] || "").trim();
+        const wrong1 = (row[2] || "").trim();
+        const wrong2 = (row[3] || "").trim();
+        const wrong3 = (row[4] || "").trim();
+
+        if (correct && wrong1 && wrong2 && wrong3) {
+          questions.push({
+            id: generateId("q"),
+            type: "mcq",
+            q,
+            a: correct,
+            options: [correct, wrong1, wrong2, wrong3]
+          });
+        }
+      } else {
+        // Text: question, answer
+        const a = row[1] ? row[1].trim() : "";
+        if (a) {
+          questions.push({
+            id: generateId("q"),
+            type: "text",
+            q,
+            a
+          });
+        }
       }
     }
     return questions;
@@ -175,12 +201,23 @@ const Utils = (() => {
       return str;
     };
 
-    const lines = ["question,answer"];
+    // Header covers the widest possible row (MCQ). Text rows just leave trailing columns empty.
+    const lines = ["question,correct_answer,wrong_option_1,wrong_option_2,wrong_option_3"];
+
     for (const item of questions) {
-      lines.push(`${escapeField(item.q)},${escapeField(item.a)}`);
+      if (item.type === "mcq") {
+        const wrongOptions = (item.options || []).filter(opt => opt !== item.a);
+        const [w1, w2, w3] = wrongOptions;
+        lines.push(
+          `${escapeField(item.q)},${escapeField(item.a)},${escapeField(w1)},${escapeField(w2)},${escapeField(w3)}`
+        );
+      } else {
+        lines.push(`${escapeField(item.q)},${escapeField(item.a)},,,`);
+      }
     }
     return lines.join("\n");
   }
+
 
   function downloadCSV(filename, csvText) {
     const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
